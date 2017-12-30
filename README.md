@@ -14,3 +14,7 @@
 - https://github.com/metosin/compojure-api
 - http://clojure-liberator.github.io/liberator/
 - https://github.com/razum2um/awesome-clojure#restful-api
+### web app template 
+- https://github.com/http-kit/lein-template
+### leiningen tutorial
+- https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md
