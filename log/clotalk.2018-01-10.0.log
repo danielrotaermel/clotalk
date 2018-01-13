@@ -1,0 +1,41 @@
+2018-01-10 16:30:04,446 [main] INFO  clotalk.env - 
+-=[clotalk started successfully using the development profile]=- 
+2018-01-10 16:30:04,897 [main] INFO  luminus.http-server - server started on port 3000 
+2018-01-10 16:30:04,898 [main] INFO  luminus.repl-server - starting nREPL server on port 7000 
+2018-01-10 16:30:04,925 [main] INFO  clotalk.core - #'clotalk.config/env started 
+2018-01-10 16:30:04,925 [main] INFO  clotalk.core - #'clotalk.handler/init-app started 
+2018-01-10 16:30:04,925 [main] INFO  clotalk.core - #'clotalk.handler/app started 
+2018-01-10 16:30:04,925 [main] INFO  clotalk.core - #'clotalk.core/http-server started 
+2018-01-10 16:30:04,926 [main] INFO  clotalk.core - #'clotalk.core/repl-server started 
+2018-01-10 16:34:24,648 [Thread-13] INFO  luminus.repl-server - nREPL server stopped 
+2018-01-10 16:34:24,659 [Thread-13] INFO  luminus.http-server - HTTP server stopped 
+2018-01-10 16:34:24,659 [Thread-13] INFO  clotalk.env - 
+-=[clotalk has shut down successfully]=- 
+2018-01-10 16:34:24,660 [Thread-13] INFO  clotalk.core - #'clotalk.core/repl-server stopped 
+2018-01-10 16:34:24,660 [Thread-13] INFO  clotalk.core - #'clotalk.core/http-server stopped 
+2018-01-10 16:34:24,660 [Thread-13] INFO  clotalk.core - #'clotalk.handler/init-app stopped 
+2018-01-10 16:36:44,293 [main] INFO  clotalk.env - 
+-=[clotalk started successfully using the development profile]=- 
+2018-01-10 16:36:44,702 [main] INFO  luminus.http-server - server started on port 3000 
+2018-01-10 16:36:44,703 [main] INFO  luminus.repl-server - starting nREPL server on port 7000 
+2018-01-10 16:36:44,733 [main] INFO  clotalk.core - #'clotalk.config/env started 
+2018-01-10 16:36:44,733 [main] INFO  clotalk.core - #'clotalk.handler/init-app started 
+2018-01-10 16:36:44,733 [main] INFO  clotalk.core - #'clotalk.handler/app started 
+2018-01-10 16:36:44,733 [main] INFO  clotalk.core - #'clotalk.core/http-server started 
+2018-01-10 16:36:44,733 [main] INFO  clotalk.core - #'clotalk.core/repl-server started 
+2018-01-10 17:20:27,395 [nREPL-worker-1] INFO  clotalk.env - 
+-=[clotalk has shut down successfully]=- 
+2018-01-10 17:20:27,398 [nREPL-worker-1] INFO  clotalk.env - 
+-=[clotalk started successfully using the development profile]=- 
+2018-01-10 18:08:46,437 [Thread-13] INFO  clotalk.env - 
+-=[clotalk has shut down successfully]=- 
+2018-01-10 18:08:46,439 [Thread-13] INFO  clotalk.core - #'clotalk.handler/init-app stopped 
+2018-01-10 18:10:05,136 [main] INFO  clotalk.env - 
+-=[clotalk started successfully using the development profile]=- 
+2018-01-10 18:10:05,571 [main] INFO  luminus.http-server - server started on port 3000 
+2018-01-10 18:10:05,571 [main] INFO  luminus.repl-server - starting nREPL server on port 7000 
+2018-01-10 18:10:05,601 [main] INFO  clotalk.core - #'clotalk.config/env started 
+2018-01-10 18:10:05,601 [main] INFO  clotalk.core - #'clotalk.handler/init-app started 
+2018-01-10 18:10:05,601 [main] INFO  clotalk.core - #'clotalk.handler/app started 
+2018-01-10 18:10:05,601 [main] INFO  clotalk.core - #'clotalk.core/http-server started 
+2018-01-10 18:10:05,602 [main] INFO  clotalk.core - #'clotalk.core/repl-server started 
