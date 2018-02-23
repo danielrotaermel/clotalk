@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Welcome to clotalk</title>
+  </head>
+  <body>
+    <!-- <div id="navbar"></div> -->
+    <div id="app">
+      <div class="card text-center">
+          <div class="card-header">
+          Encrypted Data Transfer</div>
+          <div class="card-block">
+            <h4 class="card-title"> Welcome to clotalk</h4>
+            <p class="card-text">Insert your file</p>
+            <div class="container">
+              <div class="row">
+                <div class="col align-self-center">
+                  <input type="file" class="form-control">
+                  <label>Password:</label>
+                  <input type="password" class="form-control">
+                </div>
+                  <div class="w-100"></div>
+                <div class="col align-self-center">
+                  <button class="btn btn-primary">encrypt and send</button>
+                  <button class="btn btn-danger">cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-muted">
+            pre-pre-alpha
+            </div>
+          </div>
+    </div>
+
+    <!-- scripts and styles -->
+    {% style "/assets/bootstrap/css/bootstrap.min.css" %}
+    {% style "/assets/font-awesome/web-fonts-with-css/css/fontawesome-all.min.css" %}
+    {% style "/css/screen.css" %}
+
+    {% script "/assets/jquery/jquery.min.js" %}
+    {% script "/assets/font-awesome/svg-with-js/js/fontawesome.min.js" %}
+    {% script "/assets/tether/dist/js/tether.min.js" %}
+    {% script "/assets/bootstrap/js/bootstrap.min.js" %}
+
+  </body>
+</html>
