@@ -22,4 +22,11 @@
                     :email email}}))
 
 (defn get-user [id]
-  (mc/find-one-as-map db "users" {:_id id}))
+  (mc/find-one-as-map db "users" {:id id}))
+
+;; helper
+(defn clojurize [[k v]]
+  [(-> k name (.replaceAll "_" "-") keyword) v])
+
+(defn clojurize-keys [m]
+  (->> m (map clojurize) (into {})))
