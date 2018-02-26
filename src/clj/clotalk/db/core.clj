@@ -3,7 +3,8 @@
               [monger.collection :as mc]
               [monger.operators :refer :all]
               [mount.core :refer [defstate]]
-              [clotalk.config :refer [env]]))
+              [clotalk.config :refer [env]])
+    (:import [org.bson.types.ObjectId]))
 
 (defstate db*
   :start (-> env :database-url mg/connect-via-uri)
@@ -16,10 +17,13 @@
   (mc/insert db "users" user))
 
 (defn update-user [id first-name last-name email]
-  (mc/update db "users" {:_id id}
+  (mc/update db "users" {:id id}
              {$set {:first_name first-name
                     :last_name last-name
                     :email email}}))
+
+(defn delete-user [id]
+    (mc/remove db "users" {:id id}))
 
 (defn get-user [id]
   (mc/find-one-as-map db "users" {:id id}))
