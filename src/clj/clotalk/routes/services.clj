@@ -61,7 +61,7 @@
 
                           (GET "/:id" []
                                :return       User
-                               :path-params [id :- String]
+                               :path-params  [id :- String]
                                :summary      "x+y with query-parameters. y defaults to 1."
                                ;return user from db
                                (-> (dissoc (db/get-user id) :_id)
@@ -83,6 +83,20 @@
                                         :last_name last-name
                                         :email email})
                                ;return user from db
+                               (-> (dissoc (db/get-user id) :_id)
+                                   (db/clojurize-keys)
+                                   (ok)
+                                   (header "Content-Type" "application/json; charset=utf-8")))
+
+                          (DELETE "/" []
+                               :return       User
+                               :body-params  [id :- s/Str,]
+                               :summary      "x+y with query-parameters. y defaults to 1."
+                               ;persist user
+                               (db/delete-user id)
+
+                               ;return user from db
+                               ;todo return something useful
                                (-> (dissoc (db/get-user id) :_id)
                                    (db/clojurize-keys)
                                    (ok)
