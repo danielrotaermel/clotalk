@@ -1,0 +1,172 @@
+{
+	"info": {
+		"name": "clotalk",
+		"_postman_id": "f0d603ce-de88-3ed4-4fa0-8142786cf3e2",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/api/power",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x",
+						"value": "5"
+					},
+					{
+						"key": "y",
+						"value": "2"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:3000/api/power",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"power"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/api/divide",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "x",
+							"value": "8",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "y",
+							"value": "2",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/divide",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"divide"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/api/minus",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"x\": 5,\n\t\"y\": 2\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/minus",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"minus"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/api/plus",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:3000/api/plus?x=1&y=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"plus"
+					],
+					"query": [
+						{
+							"key": "x",
+							"value": "1",
+							"equals": true
+						},
+						{
+							"key": "y",
+							"value": "2",
+							"equals": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/api/times",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:3000/api/times/2/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"times",
+						"2",
+						"3"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
