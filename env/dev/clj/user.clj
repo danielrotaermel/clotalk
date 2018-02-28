@@ -2,7 +2,7 @@
   (:require 
             [mount.core :as mount]
             [clotalk.figwheel :refer [start-fw stop-fw cljs]]
-            clotalk.core))
+            [clotalk.core :refer [start-app]]))
 
 (defn start []
   (mount/start-without #'clotalk.core/repl-server))

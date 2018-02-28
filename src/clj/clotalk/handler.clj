@@ -6,7 +6,8 @@
             [compojure.route :as route]
             [clotalk.env :refer [defaults]]
             [mount.core :as mount]
-            [clotalk.middleware :as middleware]))
+            [clotalk.middleware :as middleware]
+            [clotalk.routes.websockets :refer [websocket-routes]]))
 
 (mount/defstate init-app
   :start ((or (:init defaults) identity))
@@ -19,9 +20,9 @@
       (-> #'home-routes
           (wrap-routes middleware/wrap-csrf)
           (wrap-routes middleware/wrap-formats))
-          #'service-routes
+      #'service-routes
+      #'websocket-routes
       (route/not-found
         (:body
           (error-page {:status 404
                        :title "page not found"}))))))
-
