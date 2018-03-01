@@ -4,3 +4,14 @@ html, body {
 
 #navbar {
   padding-bottom: 2rem; }
+
+.scroll-box {
+  overflow-y: scroll;
+  height: 500px; }
+
+.hide-scroll-bar {
+  width: 100% !important;
+  height: 99% !important;
+  overflow: auto !important;
+  padding-right: 15px !important;
+  /*This would hide the scroll bar of the bottom if there is one*/ }

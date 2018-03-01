@@ -16,17 +16,19 @@
 ;; Atoms
 (defonce session (r/atom {:page
                           :chat
-                          :user "anon"
+                          :user-name ""
                           :message-input ""
                           :local-chat-history []}))
+
+(def signin-focus? (r/atom true))
 
 (defn update-messages! [{:keys [message]}]
   (println message)
   (swap! session update-in [:local-chat-history] conj message))
 
 ; chat impl
-(defn send-message! [user message-text]
-  (def message {:user user :message message-text :ts (.getTime (js/Date.) :state "send")})
+(defn send-message! [user-name message-text]
+  (def message {:user-name user-name :message message-text :ts (.getTime (js/Date.) :state "send")})
   (ws/send-transit-msg! {:message message}))
 
 (defn reset-key! [key val]
@@ -65,8 +67,21 @@
       [:div {:dangerouslySetInnerHTML
              {:__html (md->html docs)}}]])])
 
+(defn user-name-input [in-focus]
+  [:div.input-group
+   [:div.input-group-prepend
+    [:span.input-group-text "@"]]
+   [:input.form-control {:type "text"
+                         :value (:user-name @session)
+                         :placeholder "What's your name?"
+                         :aria-label "user-name"
+                         :aria-describedby "basic-addon1"
+                         :on-change #(swap! session assoc :user-name (-> % .-target .-value))
+                         :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:user-name @session))))
+                                          (swap! in-focus not))}]])
+
 (defn message-input []
-  [:div.input-group.mb-3
+  [:div.input-group
    [:input.form-control {:type "text"
                          :value (:message-input @session)
                          :placeholder "Message"
@@ -75,49 +90,49 @@
                          :on-change #(swap! session assoc :message-input (-> % .-target .-value))
                          :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:message-input @session))))
                                            (do
-                                             (send-message! (:user @session) (:message-input @session))
+                                             (send-message! (:user-name @session) (:message-input @session))
                                              (reset-key! :message-input "")
                                              (println "history" (:local-chat-history @session))))}]
-                                           ;(do))}]
-                                             ;(println "key press" (.-charCode %))))}]
-                                             ;(println (:message-input @session)))))}]
    [:div.input-group-append
     [:button.btn.btn-outline-secondary {:type "button"
                                         :on-click #(if (not (s/blank? (:message-input @session)))
                                                      (do
-                                                       (send-message! (:user @session) (:message-input @session))
+                                                       (send-message! (:user-name @session) (:message-input @session))
                                                        (reset-key! :message-input "")
                                                        (println "history" (:local-chat-history @session))))}
      [:i.fas.fa-paper-plane]]]])
 
-(defn avatar
-  [initials]
-  [:div.card-subtitle [:small "@" initials]])
-  ;[:div [:span.badge.badge-primary initials]])
+(defn avatar [name]
+  [:div.card-subtitle [:small "@" name]])
+  ;[:div [:span.badge.badge-primary name]])
 
 (defn message-entry [message]
    ^{:key (get message :ts)} ;unique key to make react faster
    [:div.card.w-75.my-2
-    {:class (if (= (:user @session) (get message :user))
+    {:class (if (= (:user-name @session) (get message :user-name))
              "float-left"
              "float-right")}
     [:div.card-body.d-inline.p-2.bg-primary.text-white.rounded
-     {:class (if (= (:user @session) (get message :user))
+     {:class (if (= (:user-name @session) (get message :user-name))
               "bg-primary"
               "bg-secondary")}
      (get message :message)
-     (avatar (get message :user))]])
-
+     (avatar (get message :user-name))]])
 
 (defn chat-history [local-chat-history]
-  (doall (map #(message-entry %) local-chat-history))) ;wrapped in doall due to deref not supported in lazy seq
+  [:div
+   (doall (map #(message-entry %) local-chat-history))]) ;wrapped in doall due to deref not supported in lazy seq
 
 (defn chat-page []
   [:div.container
-   [:div.row>div.col-sm-12.card.scroll-box
+   [:div.row
+    [:div.col-sm-12.card
      [:div.card-body
-      (chat-history (:local-chat-history @session))
-      (message-input)]]])
+      [:div.scroll-box
+       (chat-history (:local-chat-history @session))]
+      (if @signin-focus?
+        (user-name-input signin-focus?)
+        (message-input))]]]])
 
 (def pages
   {:home #'home-page
