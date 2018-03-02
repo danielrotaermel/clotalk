@@ -12,4 +12,4 @@ profiles.clj
 /.env
 .nrepl-port
 /log
-.log
+*.log
