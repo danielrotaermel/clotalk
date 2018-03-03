@@ -5,19 +5,16 @@
             [goog.history.EventType :as HistoryEventType]
             [markdown.core :refer [md->html]]
             [clotalk.ajax :refer [load-interceptors!]]
+            [cljs.reader :refer [read-string]]
             [ajax.core :refer [GET POST]]
             [clojure.string :as s]
             [clotalk.websockets :as ws])
 
   (:import goog.History))
 
-(defn error-handler [{:keys [status status-text]}]
- (.log js/console (str "something bad happened: " status " " status-text)))
-
 ;; -------------------------
 ;; Atoms
-(defonce session (r/atom {:page
-                          :chat
+(defonce session (r/atom {:page nil
                           :user-name ""
                           :message-input ""
                           :local-chat-history []}))
@@ -25,20 +22,32 @@
 (def signin-focus? (r/atom true))
 
 (defn update-messages! [{:keys [message]}]
-  (println message)
   (swap! session update-in [:local-chat-history] conj message))
 
-(defn send-message! [user-name message-text]
-  (def message {:user-name user-name :message message-text :ts (.getTime (js/Date.) :state "send")})
+(defn add-message! [user-name message-text]
+  (def message {:user-name user-name :message message-text :ts (.getTime (js/Date.))})
   (ws/send-transit-msg! {:message message}))
 
 (defn reset-key! [key val]
   (swap! session assoc key val))
 
+;; -------------------------
+;; Requests
+
+(defn error-handler [{:keys [status status-text]}]
+ (.log js/console (str "something bad happened: " status " " status-text)))
+
 (defn refresh-chat-history []
   (GET "http://localhost:3000/messages" {:handler (fn [response]
                                                     (swap! session assoc :local-chat-history (read-string response)))
                                          :error-handler error-handler}))
+;; -------------------------
+;; UI Helpers
+
+(def initial-focus-wrapper
+  (with-meta identity
+    {:component-did-mount #(.focus (r/dom-node %))}))
+
 ;; -------------------------
 ;; UI Components
 
@@ -82,41 +91,40 @@
   [:div.input-group
    [:div.input-group-prepend
     [:span.input-group-text "@"]]
-   [:input.form-control
-    {:type "text"
-     :value (:user-name @session)
-     :placeholder "What's your name?"
-     :aria-label "user-name"
-     :aria-describedby "basic-addon1"
-     :on-change #(swap! session assoc :user-name (-> % .-target .-value))
-     :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:user-name @session))))
-                        (do
-                          (swap! in-focus not)))}]])
-
+   [initial-focus-wrapper
+    [:input.form-control
+     {:type "text"
+      :value (:user-name @session)
+      :placeholder "What's your name?"
+      :aria-label "user-name"
+      :aria-describedby "basic-addon1"
+      :on-change #(swap! session assoc :user-name (-> % .-target .-value))
+      :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:user-name @session))))
+                         (do
+                           (swap! in-focus not)))}]]])
 
 (defn message-input []
   [:div.input-group
-   [:input.form-control
-    {:id "message-input"
-     :type "text"
-     :value (:message-input @session)
-     :placeholder "Message"
-     :aria-label "Message"
-     :aria-describedby "basic-addon2"
-     :on-change #(swap! session assoc :message-input (-> % .-target .-value))
-     :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:message-input @session))))
-                        (do
-                          (send-message! (:user-name @session) (:message-input @session))
-                          (reset-key! :message-input "")
-                          (println "history" (:local-chat-history @session))))}]
+   [initial-focus-wrapper
+    [:input.form-control
+     {:id "message-input"
+      :type "text"
+      :value (:message-input @session)
+      :placeholder "Message"
+      :aria-label "Message"
+      :aria-describedby "basic-addon2"
+      :on-change #(swap! session assoc :message-input (-> % .-target .-value))
+      :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:message-input @session))))
+                         (do
+                           (add-message! (:user-name @session) (:message-input @session))
+                           (reset-key! :message-input "")))}]]
    [:div.input-group-append
     [:button.btn.btn-outline-secondary
      {:type "button"
       :on-click #(if (not (s/blank? (:message-input @session)))
                      (do
-                       (send-message! (:user-name @session) (:message-input @session))
-                       (reset-key! :message-input "")
-                       (println "history" (:local-chat-history @session))))}
+                       (add-message! (:user-name @session) (:message-input @session))
+                       (reset-key! :message-input "")))}
      [:i.fas.fa-paper-plane]]]])
 
 (defn avatar [name]
@@ -143,14 +151,14 @@
 (defn chat-page []
   [:div.container
    [:div.row
-    [:div.col-sm-12.card
+    [:div.col-sm-12.card.px-0
      [:div.card-body
-      [:div.scroll-box
+      [:div.scroll-box.mb-3
        (chat-history (:local-chat-history @session))]
       (if @signin-focus?
-        (user-name-input signin-focus?)
+        (r/as-element (user-name-input signin-focus?))
         (do
-          (message-input)))]]]])
+          (r/as-element [message-input])))]]]])
           ;(.focus (.getElementById js/document "message-input"))))]]]])
 
 
