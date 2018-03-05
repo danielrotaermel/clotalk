@@ -14,6 +14,7 @@
 
 ;; -------------------------
 ;; Atoms
+
 (defonce session (r/atom {:page nil
                           :user-name ""
                           :message-input ""
@@ -89,8 +90,8 @@
 
 (defn user-name-input [in-focus]
   [:div.input-group
-   [:div.input-group-prepend
-    [:span.input-group-text "@"]]
+   ;[:div.input-group-prepend
+    ;[:span.input-group-text "@"]
    [initial-focus-wrapper
     [:input.form-control
      {:type "text"
@@ -120,7 +121,8 @@
                            (reset-key! :message-input "")))}]]
    [:div.input-group-append
     [:button.btn.btn-outline-secondary
-     {:type "button"
+     {:id "send-message-button"
+      :type "button"
       :on-click #(if (not (s/blank? (:message-input @session)))
                      (do
                        (add-message! (:user-name @session) (:message-input @session))

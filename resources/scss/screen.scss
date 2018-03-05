@@ -12,3 +12,35 @@ html, body {
     overflow-y: scroll;
     height: 500px;
 }
+
+textarea:focus, input:focus, *:focus{
+    box-shadow: none !important;
+    border-color: #ced4da !important;
+    -webkit-box-shadow: none !important;
+    //box-shadow: none !important;
+    //outline:0 !important;
+}
+
+button:focus {
+  //outline:0 !important;
+}
+
+.btn:focus, .btn:active {
+  //outline: none !important;
+  //box-shadow: none !important;
+}
+
+.btn-outline-secondary {
+  border-color: #ced4da;
+  border-left: none;
+}
+
+#message-input {
+  border-right: none !important;
+}
+
+#send-message-button:hover {
+    background-color: transparent !important;
+    color: #007bff !important;
+    border-color: #ced4da;
+}
