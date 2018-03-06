@@ -50,7 +50,6 @@
     (on-close channel (partial disconnect! channel))
     (on-receive channel (fn [msg]
                           (notify-clients msg)
-                          ;(println (t-read msg))
                           (db/create-message ((t-read msg) :message))))))
                           ;(swap! chat-history conj (t-read msg))))))
 

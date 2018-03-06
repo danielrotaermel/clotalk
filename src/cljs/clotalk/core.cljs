@@ -1,5 +1,6 @@
 (ns clotalk.core
   (:require [reagent.core :as r]
+            [reagent.format :as f]
             [secretary.core :as secretary :include-macros true]
             [goog.events :as events]
             [goog.history.EventType :as HistoryEventType]
@@ -9,6 +10,7 @@
             [ajax.core :refer [GET POST]]
             [clojure.string :as s]
             [clotalk.websockets :as ws])
+            ;[reagent.format :as format])
 
   (:import goog.History))
 
@@ -27,7 +29,7 @@
 (defn update-messages! [{:keys [message]}]
   (swap! session update-in [:local-chat-history] conj message))
 
-(defn add-message! [user-name message-text]
+(defn send-message! [user-name message-text]
   (def message {:user-name user-name :message message-text :ts (.getTime (js/Date.))})
   (ws/send-transit-msg! {:message message}))
 
@@ -36,17 +38,11 @@
 (defn error-handler [{:keys [status status-text]}]
  (.log js/console (str "something bad happened: " status " " status-text)))
 
-(defn refresh-chat-history! [limit]
-  (GET "/api/messages"
-       {:params {:skip 0 :limit limit}
-        :handler #(reset-key! :local-chat-history %)
-        :error-handler error-handler}))
-
 (defn fetch-chat-history! [skip limit]
   (GET "/api/messages"
-       {:params {:skip skip :limit limit}
-        :handler #((println %)
-                   (reset-key! :local-chat-history (concat % (:local-chat-history session))))}))
+       {:params {:skip (count (:local-chat-history @session)) :limit limit}
+        :handler #(reset-key! :local-chat-history (sort-by :ts (concat % (:local-chat-history @session))))
+        :error-handler error-handler}))
 
 (defn fetch-docs! []
   (GET "/docs"
@@ -58,6 +54,10 @@
 (def initial-focus-wrapper
   (with-meta identity
     {:component-did-mount #(.focus (r/dom-node %))}))
+
+(defn scroll-to-el [el]
+  (with-meta identity
+    {:component-did-mount #(.scrollIntoView (.querySelector el))}));)}))
 
 ;; -------------------------
 ;; UI Components
@@ -127,7 +127,7 @@
       :on-change #(swap! session assoc :message-input (-> % .-target .-value))
       :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:message-input @session))))
                          (do
-                           (add-message! (:user-name @session) (:message-input @session))
+                           (send-message! (:user-name @session) (:message-input @session))
                            (reset-key! :message-input "")))}]]
    [:div.input-group-append
     [:button.btn.btn-outline-secondary
@@ -135,41 +135,41 @@
       :type "button"
       :on-click #(if (not (s/blank? (:message-input @session)))
                      (do
-                       (add-message! (:user-name @session) (:message-input @session))
+                       (send-message! (:user-name @session) (:message-input @session))
                        (reset-key! :message-input "")))}
      [:i.fas.fa-paper-plane]]]])
 
 (defn fetch-chat-history-button []
-  [:button.btn.btn-outline-secondary
-   {:type "button"
-    :on-click (fn [x]
-                (GET "/api/messages"
-                 {:params {:skip 2 :limit 2}
-                  :handler #(swap! session update-in [:local-chat-history] conj %)}))}
-                            ;todo load previous messages}))}
-                            ;(swap! session update-in [:local-chat-history] conj message
-                            ;(reset-key! session :local-chat-history (sort-by :ts (:local-chat-history session))))}))}
-   [:i.fas.fa-paper-plane]])
-
-(defn avatar [name]
-  [:div.card-subtitle [:small "@" name]])
-  ;[:div [:span.badge.badge-primary name]])
+  [:div.container.sticky-top
+   {:id "fetch-chat-history-button"
+    :on-click #(fetch-chat-history! 0 20)}
+   [:i.fas.fa-angle-up]])
 
 (defn message-entry [message]
    ^{:key (get message :ts)} ;unique key to make react faster
-   [:div.card.w-75.my-2
-    {:class (if (= (:user-name @session) (get message :user-name))
-             "float-left"
-             "float-right")}
-    [:div.card-body.d-inline.p-2.bg-primary.text-white.rounded
-     {:class (if (= (:user-name @session) (get message :user-name))
-              "bg-primary"
-              "bg-secondary")}
-     (get message :message)
-     (avatar (get message :user-name))]])
+   [:div.row
+    [:div.col.px-0
+      [:div.card.message-entry
+       {:class (if (= (:user-name @session) (get message :user-name))
+                "float-left"
+                "float-right")}
+       [:div.card-body.d-inline.p-2.bg-primary.text-white.rounded
+        {:class (if (= (:user-name @session) (get message :user-name))
+                 "bg-primary"
+                 "bg-secondary")}
+        [:div.card-text
+         (get message :message)]
+        [:div.card-subtitle
+         [:div.container
+          [:div.row
+           [:div.col.pl-0 {:id "subline"}
+            [:small "@" (:user-name message)]]
+           [:div.col.pr-0.float-right.text-right {:id "subline"}
+            [:small " " (f/date-format (js/Date. (:ts message)) "hh:mm")]]]]]]]]])
 
 (defn chat-history [local-chat-history]
-  [:div
+  [:div.container
+   {:id "chat-history"}
    (doall (map #(message-entry %) local-chat-history))]) ;wrapped in doall due to deref not supported in lazy seq
 
 (defn chat-page []
@@ -179,7 +179,7 @@
      [:div.card-body
       [:div.scroll-box.mb-3
        (fetch-chat-history-button)
-       (chat-history (:local-chat-history @session))]
+       (chat-history (sort-by :ts (:local-chat-history @session)))]
       (if @signin-focus?
         (r/as-element (user-name-input signin-focus?))
         (do
@@ -236,7 +236,7 @@
 (defn init! []
   (start-websocket)
   (load-interceptors!)
-  (refresh-chat-history! 2)
+  (fetch-chat-history! 0 5)
   (fetch-docs!)
   (hook-browser-navigation!)
   (mount-components))

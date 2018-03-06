@@ -19,9 +19,26 @@ textarea:focus, input:focus, *:focus {
   border-left: none; }
 
 #message-input {
-  border-right: none !important; }
+  border-right: none !important;
+  caret-color: #007bff; }
 
 #send-message-button:hover {
   background-color: transparent !important;
   color: #007bff !important;
   border-color: #ced4da; }
+
+#fetch-chat-history-button {
+  background-color: white;
+  color: #62676c;
+  transition: color 1s;
+  text-align: center !important; }
+
+#fetch-chat-history-button:hover {
+  color: #007bff; }
+
+#subline {
+  color: #ededed; }
+
+.message-entry {
+  max-width: 100%;
+  box-sizing: border-box; }

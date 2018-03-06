@@ -33,7 +33,8 @@
                  [ring/ring-defaults "0.3.1"]
                  [secretary "1.2.3"]
                  [selmer "1.11.7"]
-                 [metosin/ring-swagger "0.26.0"]]
+                 [metosin/ring-swagger "0.26.0"]
+                 [reagent-utils "0.3.1"]]
 
   :min-lein-version "2.0.0"
 
