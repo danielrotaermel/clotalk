@@ -14,13 +14,15 @@
 
 ;; -------------------------
 ;; Atoms
-
 (defonce session (r/atom {:page nil
                           :user-name ""
                           :message-input ""
                           :local-chat-history []}))
 
 (def signin-focus? (r/atom true))
+
+(defn reset-key! [key val]
+  (swap! session assoc key val))
 
 (defn update-messages! [{:keys [message]}]
   (swap! session update-in [:local-chat-history] conj message))
@@ -29,19 +31,27 @@
   (def message {:user-name user-name :message message-text :ts (.getTime (js/Date.))})
   (ws/send-transit-msg! {:message message}))
 
-(defn reset-key! [key val]
-  (swap! session assoc key val))
-
 ;; -------------------------
 ;; Requests
-
 (defn error-handler [{:keys [status status-text]}]
  (.log js/console (str "something bad happened: " status " " status-text)))
 
-(defn refresh-chat-history []
-  (GET "http://localhost:3000/messages" {:handler (fn [response]
-                                                    (swap! session assoc :local-chat-history (read-string response)))
-                                         :error-handler error-handler}))
+(defn refresh-chat-history! [limit]
+  (GET "/api/messages"
+       {:params {:skip 0 :limit limit}
+        :handler #(reset-key! :local-chat-history %)
+        :error-handler error-handler}))
+
+(defn fetch-chat-history! [skip limit]
+  (GET "/api/messages"
+       {:params {:skip skip :limit limit}
+        :handler #((println %)
+                   (reset-key! :local-chat-history (concat % (:local-chat-history session))))}))
+
+(defn fetch-docs! []
+  (GET "/docs"
+       {:handler #(reset-key! :docs %)}))
+
 ;; -------------------------
 ;; UI Helpers
 
@@ -129,6 +139,18 @@
                        (reset-key! :message-input "")))}
      [:i.fas.fa-paper-plane]]]])
 
+(defn fetch-chat-history-button []
+  [:button.btn.btn-outline-secondary
+   {:type "button"
+    :on-click (fn [x]
+                (GET "/api/messages"
+                 {:params {:skip 2 :limit 2}
+                  :handler #(swap! session update-in [:local-chat-history] conj %)}))}
+                            ;todo load previous messages}))}
+                            ;(swap! session update-in [:local-chat-history] conj message
+                            ;(reset-key! session :local-chat-history (sort-by :ts (:local-chat-history session))))}))}
+   [:i.fas.fa-paper-plane]])
+
 (defn avatar [name]
   [:div.card-subtitle [:small "@" name]])
   ;[:div [:span.badge.badge-primary name]])
@@ -156,6 +178,7 @@
     [:div.col-sm-12.card.px-0
      [:div.card-body
       [:div.scroll-box.mb-3
+       (fetch-chat-history-button)
        (chat-history (:local-chat-history @session))]
       (if @signin-focus?
         (r/as-element (user-name-input signin-focus?))
@@ -201,12 +224,8 @@
        (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
-
 ;; -------------------------
 ;; Initialize app
-(defn fetch-docs! []
-  (GET "/docs" {:handler #(swap! session assoc :docs %)}))
-
 (defn mount-components []
   (r/render [#'navbar] (.getElementById js/document "navbar"))
   (r/render [#'page] (.getElementById js/document "app")))
@@ -217,6 +236,7 @@
 (defn init! []
   (start-websocket)
   (load-interceptors!)
+  (refresh-chat-history! 2)
   (fetch-docs!)
   (hook-browser-navigation!)
   (mount-components))

@@ -5,14 +5,12 @@
 (def json-reader (t/reader :json))
 (def json-writer (t/writer :json))
 
-(defn receive-transit-msg!
- [update-fn]
+(defn receive-transit-msg! [update-fn]
  (fn [msg]
    (update-fn
      (->> msg .-data (t/read json-reader)))))
 
-(defn send-transit-msg!
- [msg]
+(defn send-transit-msg! [msg]
  (if @ws-chan
    (.send @ws-chan (t/write json-writer msg))
    (throw (js/Error. "Websocket is not available!"))))
