@@ -90,5 +90,10 @@
         (-> site-defaults
             (assoc-in [:security :anti-forgery] false)
             (assoc-in  [:session :store] (ttl-memory-store (* 60 30)))))
+        ;(-> site-defaults
+        ;    (assoc-in [:security :anti-forgery] false)
+        ;    (assoc-in [:session :store] (cookie-store {:key "UFTGpcARZbmqGK018GNeYpO9"}))
+        ;    (assoc-in [:session :cookie-name] "clotalk-sessions")
+        ;    (assoc-in [:session :cookie-attrs] {:max-age 10})))
       wrap-context
       wrap-internal-error))

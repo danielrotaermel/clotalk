@@ -55,12 +55,24 @@
   (with-meta identity
     {:component-did-mount #(.focus (r/dom-node %))}))
 
-(defn scroll-to-el [el]
-  (with-meta identity
-    {:component-did-mount #(.scrollIntoView (.querySelector el))}));)}))
+#_(defn scroll-to-el [el]
+    (with-meta identity
+      {:component-did-mount #(.scrollIntoView (.querySelector el))}));)}))
 
 ;; -------------------------
 ;; UI Components
+
+#_(defn login-page [])
+  [:div
+    [:h3 "Login"]
+    [:form {:method "POST" :action "login"}
+     [:div "Username:"
+      [:input {:type "text" :name "username" :required "required"}]]]
+    [:div "Password:"
+     [:input {:type "password" :name "password" :required "required"}]]
+    [:div
+     [:input {:type "submit" :value "Log In"}]]]
+
 
 (defn nav-link [uri title page]
   [:li.nav-item
@@ -80,28 +92,125 @@
     [:ul.nav.navbar-nav.mr-auto
      [nav-link "#/" "Home" :home]
      [nav-link "#/chat" "Chat" :chat]
-     [nav-link "#/about" "About" :about]]]])
-
-(defn about-page []
-  [:div.container
-   [:div.row
-    [:div.col-md-12
-     [:img {:src (str js/context "/img/warning_clojure.png")}]]]])
-
-(defn home-page []
-  [:div.container
-   (when-let [docs (:docs @session)]
-     [:div.row>div.col-sm-12
-      [:div {:dangerouslySetInnerHTML
-             {:__html (md->html docs)}}]])])
+     [nav-link "#/login" "Login" :login]]]])
 
 ;; -------------------------
 ;; chat-page
 
+;(let [her-number 234] (println her-number))
+
+(defn focus-next [element-id]
+  (.focus (.getElementById js/document element-id)))
+
+(defn on-enter [func value]
+  #(if (and (= 13 (.-charCode %)) (not (s/blank? value)))
+     (func)))
+
+(defn input-element
+  "An input element which updates its value and on focus parameters on change, blur, and focus"
+  [id name type value on-enter-func]
+  [:input {:id id
+           :name name
+           :class "form-control"
+           :type type
+           :required ""
+           :value @value
+           :on-change #(reset! value (-> % .-target .-value))
+           :on-key-press (on-enter on-enter-func value)}])
+
+;:works
+
+(defn username-input [username-atom]
+  (input-element "username" "username" "username" username-atom #(focus-next "email")))
+
+(defn email-input [email-address-atom]
+  (input-element "email" "email" "email" email-address-atom #(focus-next "password")))
+
+(defn password-input [password-atom]
+  (input-element "password" "password" "password" password-atom #(do)))
+
+(defn wrap-input-group [text element]
+   [:div.input-group.mb-3
+    [:div.input-group-prepend
+     [:div.input-group-text text]]
+    element])
+
+(defn signup-component []
+  (let [email-address (r/atom nil)
+        username (r/atom nil)
+        password (r/atom nil)]
+     (r/create-class
+       {:component-did-mount
+        #(println "component-did-mount")
+
+        :display-name  "signup-component"  ;; for more helpful warnings & errors
+
+        :reagent-render
+         (fn []           ;; repeat parameters
+           [:div.signup-wrapper
+            (wrap-input-group "Username" [username-input username])
+            (wrap-input-group "Email" [email-input email-address])
+            (wrap-input-group "Password" [password-input password])
+            [:button.btn.btn-primary
+                                     {:type "button"
+                                      :on-click #(println "todo register")} 
+             "Register"]])})))
+
+(defn signin-component []
+  (let [username (r/atom nil)
+        password (r/atom nil)]
+     (r/create-class
+       {:component-did-mount
+        #(println "component-did-mount")
+
+        :display-name  "signin-component"  ;; for more helpful warnings & errors
+
+        :reagent-render
+         (fn []           ;; repeat parameters
+           [:div.signup-wrapper
+            (wrap-input-group "Username" [username-input username])
+            (wrap-input-group "Password" [password-input password])
+            [:button.btn.btn-primary
+                                     {:type "button"
+                                      :on-click #(println "todo login")}
+             "Login"]])})))
+
+
+(defn login-wrapper []
+  (let [toggle-focus (r/atom true)]
+     (r/create-class
+       {:component-did-mount
+        #(println "component-did-mount")
+
+        :display-name  "login-wrapper"  ;; for more helpful warnings & errors
+
+        :reagent-render
+         (fn []           ;; repeat parameters
+           [:div.card.login-wrapper
+            [:div.card-header
+             [:ul.nav.nav-tabs.card-header-tabs
+              [:li.nav-item
+               [:a.nav-link
+                {:class (if @toggle-focus
+                          "active")
+                 :on-click #(reset! toggle-focus true)}
+                "Login"]]
+              [:li.nav-item
+               [:a.nav-link
+                {:class (if (not @toggle-focus)
+                         "active")
+                 :on-click #(reset! toggle-focus false)}
+                "Register"]]]]
+            [:div.card-body.login-wrapper
+             (if @toggle-focus
+               [signin-component]
+               [signup-component])]])})))
+
+
 (defn user-name-input [in-focus]
   [:div.input-group
-   ;[:div.input-group-prepend
-    ;[:span.input-group-text "@"]
+   [:div.input-group-prepend
+    [:span.input-group-text "Username @"]]
    [initial-focus-wrapper
     [:input.form-control
      {:type "text"
@@ -172,10 +281,27 @@
    {:id "chat-history"}
    (doall (map #(message-entry %) local-chat-history))]) ;wrapped in doall due to deref not supported in lazy seq
 
+;; -------------------------
+;; pages
+
+(defn home-page []
+  [:div.container
+   (when-let [docs (:docs @session)]
+     [:div.row>div.col-sm-12
+      [:div {:dangerouslySetInnerHTML
+             {:__html (md->html docs)}}]])])
+
+(defn login-page []
+  [:div.container
+   [:div.row
+    [:div.col-md-12
+     [login-wrapper]]]])
+     ;[:img {:src (str js/context "/img/warning_clojure.png")}]]]])
+
 (defn chat-page []
   [:div.container
    [:div.row
-    [:div.col-sm-12.card.px-0
+    [:div.col-sm-12>div.card.px-0
      [:div.card-body
       [:div.scroll-box.mb-3
        (fetch-chat-history-button)
@@ -193,7 +319,7 @@
 (def pages
   {:home #'home-page
    :chat #'chat-page
-   :about #'about-page})
+   :login #'login-page})
 
 (defn page []
   [(pages (:page @session))])
@@ -209,8 +335,8 @@
 (secretary/defroute "/chat" []
                     (swap! session assoc :page :chat))
 
-(secretary/defroute "/about" []
-                    (swap! session assoc :page :about))
+(secretary/defroute "/login" []
+                    (swap! session assoc :page :login))
 
 
 ;; -------------------------
