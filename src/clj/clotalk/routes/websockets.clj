@@ -3,7 +3,6 @@
            [org.httpkit.server :refer [send! with-channel on-close on-receive]]
            [cognitect.transit :as t]
            [clojure.tools.logging :as log]
-           [clojure.core.async :refer [<! >! put! close! go]]
            [clojure.java.io :as io]
            [clotalk.db.core :as db]))
 
