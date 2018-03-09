@@ -140,8 +140,7 @@
         username (r/atom nil)
         password (r/atom nil)]
      (r/create-class
-       {:component-did-mount
-        #(println "component-did-mount")
+       {;:component-did-mount #(println "component-did-mount")
 
         :display-name  "signup-component"  ;; for more helpful warnings & errors
 
@@ -153,15 +152,14 @@
             (wrap-input-group "Password" [password-input password])
             [:button.btn.btn-primary
                                      {:type "button"
-                                      :on-click #(println "todo register")} 
+                                      :on-click #(println "todo register")}
              "Register"]])})))
 
 (defn signin-component []
   (let [username (r/atom nil)
         password (r/atom nil)]
      (r/create-class
-       {:component-did-mount
-        #(println "component-did-mount")
+       {;:component-did-mount #(println "component-did-mount")
 
         :display-name  "signin-component"  ;; for more helpful warnings & errors
 
@@ -179,8 +177,7 @@
 (defn login-wrapper []
   (let [toggle-focus (r/atom true)]
      (r/create-class
-       {:component-did-mount
-        #(println "component-did-mount")
+       {;:component-did-mount #(println "component-did-mount")
 
         :display-name  "login-wrapper"  ;; for more helpful warnings & errors
 
@@ -356,8 +353,16 @@
   (r/render [#'navbar] (.getElementById js/document "navbar"))
   (r/render [#'page] (.getElementById js/document "app")))
 
+(def https?
+  (= (.-protocol js/location) "https:"))
+
+(defn ws-or-wss [using-https?]
+  (if using-https?
+    "wss://"
+    "ws://"))
+
 (defn start-websocket []
-  (ws/make-websocket! (str "ws://" (.-host js/location) "/ws") update-messages!))
+  (ws/make-websocket! (str (ws-or-wss https?) (.-host js/location) "/ws") update-messages!))
 
 (defn init! []
   (start-websocket)
