@@ -46,7 +46,11 @@
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-sassc "0.10.4"]
-            [lein-auto "0.1.2"]]
+            [lein-auto "0.1.2"]
+            [lein-heroku "0.5.3"]]
+
+  :heroku {:app-name "clotalk"}
+
    :sassc
    [{:src "resources/scss/screen.scss"
      :output-to "resources/public/css/screen.css"
