@@ -21,38 +21,44 @@
 
 (def objectIds->str (partial map objectId->str))
 
-(defn create-user [user]
-  (-> (mc/insert db "users" user)
+
+(defn query [& {:keys [coll query fields sort limit skip]
+                :or   {query {} fields [] limit 0 skip 0}}]
+  (-> (q/with-collection db coll
+                         (q/find query) ;query map
+                         (q/fields fields) ;vector of :keys
+                         (q/sort sort) ;array map of {:keys (1 for ascending, -1 for descending ordering):}
+                         (q/limit limit)
+                         (q/skip skip))
       (objectIds->str)))
 
-(defn update-user [id first-name last-name email]
-  (-> (mc/update db "users" {:_id id}
-             {$set {:first_name first-name
-                    :last_name last-name
-                    :email email}})
+(defn create-user [user-name hashed-password]
+  (-> (mc/insert-and-return db "users"
+                 {:user-name user-name
+                  :hashed-password hashed-password
+                  :roles #{:user}})
+      (objectId->str)))
+
+(defn update-user [id user-name hashed-password roles]
+  (-> (mc/insert-and-return db "users" {:_id id}
+             {$set {:user-name user-name
+                    :hashed-password hashed-password
+                    :roles roles}})
       (objectIds->str)))
 
-(defn get-user [id]
-  (-> (mc/find-one-as-map db "users" {:_id id})
-      (objectIds->str)))
+(defn get-user [user-name]
+  (-> (mc/find-one-as-map db "users" {:user-name user-name})
+      (objectId->str)))
 
 (defn create-message [message]
   (-> (mc/insert db "messages" message)
-      (objectIds->str)))
+      (objectId->str)))
 
 (defn get-messages []
   (-> (mc/find-maps db "messages")
       (objectIds->str)))
 
-(defn query [& {:keys [coll query fields sort limit skip]
-                :or   {query {} fields [] limit 0 skip 0}}]
-    (-> (q/with-collection db coll
-          (q/find query) ;query map
-          (q/fields fields) ;vector of :keys
-          (q/sort sort) ;array map of {:keys (1 for ascending, -1 for descending ordering):}
-          (q/limit limit)
-          (q/skip skip))
-        (objectIds->str)))
+
 
 ;(query :coll "messages" :fields [:user-name] :sort {:ts -1})
 
