@@ -28,7 +28,7 @@
                                  :description "Sample Services"}}}}
 
         (context "/api" []
-                 :tags ["thingie"]
+                 :tags ["messages" "chat"]
 
                  (GET "/messages" []
                       :return       [Message] ; -> breaks swagger-ui
@@ -38,6 +38,7 @@
                           (ok)
                           (header "Content-Type" "application/transit+json; charset=utf-8")))))
 
+; examples
 ;                 (POST "/minus" []
 ;                       :return      Long
 ;                       :body-params [x :- Long, y :- Long]

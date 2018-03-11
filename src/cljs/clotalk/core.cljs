@@ -21,8 +21,6 @@
                           :message-input ""
                           :local-chat-history []}))
 
-(def signin-focus? (r/atom true))
-
 (defn reset-key! [key val]
   (swap! session assoc key val))
 
@@ -148,7 +146,7 @@
          (fn []           ;; repeat parameters
            [:div.signup-wrapper
             (wrap-input-group "Username" [username-input username])
-            (wrap-input-group "Email" [email-input email-address])
+            ;(wrap-input-group "Email" [email-input email-address])
             (wrap-input-group "Password" [password-input password])
             [:button.btn.btn-primary
                                      {:type "button"
@@ -296,18 +294,21 @@
      ;[:img {:src (str js/context "/img/warning_clojure.png")}]]]])
 
 (defn chat-page []
-  [:div.container
-   [:div.row
-    [:div.col-sm-12>div.card.px-0
-     [:div.card-body
-      [:div.scroll-box.mb-3
-       (fetch-chat-history-button)
-       (chat-history (sort-by :ts (:local-chat-history @session)))]
-      (if @signin-focus?
-        (r/as-element (user-name-input signin-focus?))
-        (do
-          (r/as-element [message-input])))]]]])
-          ;(.focus (.getElementById js/document "message-input"))))]]]])
+  ((let [signin-focus? (r/atom true)]
+    (fn []
+      [:div.container
+       [:div.row
+        [:div.col-sm-12>div.card.px-0
+         [:div.card-body
+          [:div.scroll-box.mb-3
+           (fetch-chat-history-button)
+           (chat-history (sort-by :ts (:local-chat-history @session)))]
+          (if @signin-focus?
+            (r/as-element (user-name-input signin-focus?))
+            (do
+              (r/as-element [message-input])))]]]]))))
+              ;(.focus (.getElementById js/document "message-input"))))]]]])
+
 
 
 ;; -------------------------

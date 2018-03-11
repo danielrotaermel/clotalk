@@ -4,7 +4,9 @@
            [cognitect.transit :as t]
            [clojure.tools.logging :as log]
            [clojure.java.io :as io]
-           [clotalk.db.core :as db]))
+           [clotalk.db.core :as db]
+           ;[clotalk.routes.home :refer [is-logged-in]]
+           [buddy.auth.accessrules :refer [restrict]]))
 
 (defonce channels (atom #{}))
 
@@ -53,4 +55,5 @@
                           ;(swap! chat-history conj (t-read msg))))))
 
 (defroutes websocket-routes
- (GET "/ws" request (ws-handler request)))
+  ;(GET "/ws" (restrict ws-handler {:handler clotalk.routes.home/is-logged-in})))
+  (GET "/ws" request (ws-handler request)))

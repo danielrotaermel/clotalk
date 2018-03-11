@@ -20,7 +20,7 @@
   (contains? (apply hash-set (:roles user)) "admin"))
 
 (defn valid-token? [user token]
-  (jwt/unsign user secret))
+  (= user (jwt/unsign user secret)))
 
 (defn is-logged-in [{user :identity token :token :as req}]
   (valid-token? user token))
@@ -68,24 +68,18 @@
   (layout/render "home.html"))
 
 (defroutes home-routes
-  (GET "/" []
+  (GET "/" [] ;(restrict home-page {:handler is-logged-in})
        (home-page))
   (GET "/docs" []
        (-> (response/ok (-> "docs/docs.md" io/resource slurp))
            (response/header "Content-Type" "text/plain; charset=utf-8")))
 
-  (POST "/login" [user-name password next session :as req] ;do-login))
+  (POST "/login" [user-name password next session :as req]
     (println "SESSION: " session)
     (do-login user-name password next session))
-    ;(response/ok (str req))))
-    ;(println "user-name:" user-name "pass:" pass)))
-    ;(println user-name)
 
-    ;(response/ok (str id))))
-
-    ;                  (auth/do-login %)))
   (POST "/logout" [] do-logout)
 
-  (POST "/signup" [user-name password session :as req] ;do-login))
+  (POST "/signup" [user-name password session :as req]
     (println "SESSION: " session)
     (do-signup user-name password session)))
