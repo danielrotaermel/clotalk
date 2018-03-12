@@ -14,6 +14,10 @@
 
   (:import goog.History))
 
+;; Cookies
+;response (assoc-in [:cookies "username" :value] "Alice"))
+
+
 ;; -------------------------
 ;; Atoms
 (defonce session (r/atom {:page nil
@@ -31,6 +35,9 @@
   (def message {:user-name user-name :message message-text :ts (.getTime (js/Date.))})
   (ws/send-transit-msg! {:message message}))
 
+(defn redirect! [url]
+  (set! (.-location js/document) url))
+
 ;; -------------------------
 ;; Requests
 (defn error-handler [{:keys [status status-text]}]
@@ -45,6 +52,21 @@
 (defn fetch-docs! []
   (GET "/docs"
        {:handler #(reset-key! :docs %)}))
+
+(defn do-login! [user-name password]
+  (POST "/login"
+    {:params {:user-name user-name :password password}
+     :handler (fn [resp]
+                (println resp))
+                ;(redirect! "#/chat"))
+     :error-handler error-handler}))
+
+(defn do-signup! [user-name password]
+  (println user-name password)
+  (POST "/signup"
+    {:params {:user-name user-name :password password}
+     :handler #(println %)
+     :error-handler error-handler}))
 
 ;; -------------------------
 ;; UI Helpers
@@ -134,8 +156,7 @@
     element])
 
 (defn signup-component []
-  (let [email-address (r/atom nil)
-        username (r/atom nil)
+  (let [username (r/atom nil)
         password (r/atom nil)]
      (r/create-class
        {;:component-did-mount #(println "component-did-mount")
@@ -150,16 +171,16 @@
             (wrap-input-group "Password" [password-input password])
             [:button.btn.btn-primary
                                      {:type "button"
-                                      :on-click #(println "todo register")}
+                                      :on-click #(do-signup! @username @password)}
              "Register"]])})))
 
-(defn signin-component []
+(defn login-component []
   (let [username (r/atom nil)
         password (r/atom nil)]
      (r/create-class
        {;:component-did-mount #(println "component-did-mount")
 
-        :display-name  "signin-component"  ;; for more helpful warnings & errors
+        :display-name  "login-component"  ;; for more helpful warnings & errors
 
         :reagent-render
          (fn []           ;; repeat parameters
@@ -168,7 +189,7 @@
             (wrap-input-group "Password" [password-input password])
             [:button.btn.btn-primary
                                      {:type "button"
-                                      :on-click #(println "todo login")}
+                                      :on-click #(do-login! @username @password)}
              "Login"]])})))
 
 
@@ -198,7 +219,7 @@
                 "Register"]]]]
             [:div.card-body.login-wrapper
              (if @toggle-focus
-               [signin-component]
+               [login-component]
                [signup-component])]])})))
 
 

@@ -39,26 +39,23 @@
   (println user-name password)
   (println (lookup-user user-name password))
   (if-let [user (lookup-user user-name password)]
-    (->  (redirect (or next "/#/chat"))     ; Redirect to "next" or /
-         (assoc :session session)
-         (assoc-in [:session :identity] user)
-         (assoc-in [:session :token] (str (jwt/sign user secret))))
+    (response/ok {:auth {:identity user}
+                  :token (str (jwt/sign user secret))})
     (response/unauthorized "wrong password or user-name")))
 
 
 (defn do-logout [{session :session}]
   (println "users session: " session)
-  (-> (redirect "/#/login")                         ;Redirect to login
+  (-> session
       (assoc :session (dissoc session :identity)))) ;Remove :identity from session
-
 
 (defn do-signup [user-name password session]
   (println user-name)
   (println (lookup-user user-name))
   (if (lookup-user user-name)
-    (response/conflict "user-name already exists")    ;conflicting user-name
+    (response/unprocessable-entity "user-name already exists")    ;conflicting user-name
     (let [user (dissoc (db/create-user user-name (hashers/encrypt password)) :hashed-password)]
-      (->  (redirect (or next "/#/chat"))     ; Redirect to "next" or /
+      (->  {}    ; Redirect to "next" or /
            (assoc :session session)
            (assoc-in [:session :identity] user)
            (assoc-in [:session :token] (str (jwt/sign user secret)))))))
@@ -75,11 +72,16 @@
            (response/header "Content-Type" "text/plain; charset=utf-8")))
 
   (POST "/login" [user-name password next session :as req]
-    (println "SESSION: " session)
+    ;(println "user-name: " user-name)
     (do-login user-name password next session))
+
+  (POST "/test" req
+    ;(println (str "REQ: " req))
+    (response/ok (str "REQ: " req)))
+    ;(do-login user-name password next session))
 
   (POST "/logout" [] do-logout)
 
   (POST "/signup" [user-name password session :as req]
-    (println "SESSION: " session)
+    ;(println "SESSION: " session)
     (do-signup user-name password session)))

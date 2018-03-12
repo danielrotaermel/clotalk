@@ -19,7 +19,7 @@
   (middleware/wrap-base
     (routes
       (-> #'home-routes
-          (wrap-routes middleware/wrap-csrf)
+          ;(wrap-routes middleware/wrap-csrf)
           (wrap-routes middleware/wrap-formats)
           (wrap-authentication backend))
       #'service-routes
