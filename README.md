@@ -1,20 +1,21 @@
-# clotalk - init
+# clotalk
 
-### ref 
-- https://github.com/stylefruits/gniazdo
-- http://aleph.io
-- https://github.com/alexkehayias/clojure-aleph-chat/tree/master/project/src/clj/core
-- https://github.com/ptaoussanis/sente
-- https://www.sharedrop.io
-- https://gist.github.com/minimal/281490
-- http://blog.jayfields.com/2011/02/clojure-web-socket-introduction.html
-- http://www.http-kit.org/index.html
-- https://github.com/juxt/yada
-- https://github.com/zalando/friboo
-- https://github.com/metosin/compojure-api
-- http://clojure-liberator.github.io/liberator/
-- https://github.com/razum2um/awesome-clojure#restful-api
-### web app template 
-- https://github.com/http-kit/lein-template
-### leiningen tutorial
-- https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md
+generated using Luminus version "2.9.12.27"
+
+FIXME
+
+## Prerequisites
+
+You will need [Leiningen][1] 2.0 or above installed.
+
+[1]: https://github.com/technomancy/leiningen
+
+## Running
+
+To start a web server for the application, run:
+
+    lein run 
+
+## License
+
+Copyright © 2018 FIXME

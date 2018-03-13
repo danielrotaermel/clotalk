@@ -1,0 +1,72 @@
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    height: 100%
+    //padding-top: 40px;
+}
+
+#navbar {
+    padding-bottom: 2rem
+}
+
+.scroll-box {
+    overflow-y: scroll;
+    height: 500px;
+}
+
+textarea:focus, input:focus, *:focus{
+    box-shadow: none !important;
+    border-color: #ced4da !important;
+    -webkit-box-shadow: none !important;
+    //box-shadow: none !important;
+    //outline:0 !important;
+}
+
+button:focus {
+  //outline:0 !important;
+}
+
+.btn:focus, .btn:active {
+  //outline: none !important;
+  //box-shadow: none !important;
+}
+
+.btn-outline-secondary {
+  border-color: #ced4da;
+  border-left: none;
+}
+
+#message-input {
+  border-right: none !important;
+  caret-color: #007bff;
+}
+
+#send-message-button:hover {
+    background-color: transparent !important;
+    color: #007bff !important;
+    border-color: #ced4da;
+}
+
+#fetch-chat-history-button {
+    //background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%); /* FF3.6-15 */
+    //background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* Chrome10-25,Safari5.1-6 */
+    //background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    //filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
+    background-color: white;
+    color: #62676c;
+    transition: color 1s;
+    text-align: center !important;
+}
+
+#fetch-chat-history-button:hover {
+    color: #007bff;
+}
+
+#subline {
+    color: #ededed;
+}
+
+.message-entry {
+    //min-width: 2rem;
+    max-width: 100%;
+    box-sizing: border-box
+}
