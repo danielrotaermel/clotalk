@@ -11,12 +11,12 @@
 (require '[ring.swagger.json-schema :as json-schema])
 (defmethod json-schema/convert-class ObjectId [_] {:type "string"})
 
-;(query :coll "messages" :fields [:user-name] :sort {:ts -1})
+;(query :coll "messages" :fields [:username] :sort {:ts -1})
 ;coll query fields sort limit skip
 
 (s/defschema Message
   {:id s/Str
-   :user-name s/Str
+   :username s/Str
    :message s/Str
    :ts Long})
 
@@ -28,7 +28,7 @@
                                  :description "Sample Services"}}}}
 
         (context "/api" []
-                 :tags ["thingie"]
+                 :tags ["messages" "chat"]
 
                  (GET "/messages" []
                       :return       [Message] ; -> breaks swagger-ui
@@ -38,6 +38,7 @@
                           (ok)
                           (header "Content-Type" "application/transit+json; charset=utf-8")))))
 
+; examples
 ;                 (POST "/minus" []
 ;                       :return      Long
 ;                       :body-params [x :- Long, y :- Long]

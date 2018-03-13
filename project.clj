@@ -3,7 +3,9 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
 
-  :dependencies [[ch.qos.logback/logback-classic "1.2.3"]
+  :dependencies [[buddy/buddy-auth "2.1.0"]
+                 [buddy/buddy-hashers "1.3.0"]
+                 [ch.qos.logback/logback-classic "1.2.3"]
                  [clj-time "0.14.2"]
                  [cljs-ajax "0.7.3"]
                  [com.google.guava/guava "20.0"]
@@ -46,7 +48,11 @@
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-sassc "0.10.4"]
-            [lein-auto "0.1.2"]]
+            [lein-auto "0.1.2"]
+            [lein-heroku "0.5.3"]]
+
+  :heroku {:app-name "clotalk"}
+
    :sassc
    [{:src "resources/scss/screen.scss"
      :output-to "resources/public/css/screen.css"

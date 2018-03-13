@@ -3,9 +3,10 @@
            [org.httpkit.server :refer [send! with-channel on-close on-receive]]
            [cognitect.transit :as t]
            [clojure.tools.logging :as log]
-           [clojure.core.async :refer [<! >! put! close! go]]
            [clojure.java.io :as io]
-           [clotalk.db.core :as db]))
+           [clotalk.db.core :as db]
+           [clotalk.routes.home :as home]
+           [buddy.auth.accessrules :refer [restrict]]))
 
 (defonce channels (atom #{}))
 
@@ -49,9 +50,12 @@
     (connect! channel)
     (on-close channel (partial disconnect! channel))
     (on-receive channel (fn [msg]
+                          (println (t-read msg))
+                          ;(println (home/valid-token? (:identity (:auth (t-read msg)) (:token (:auth (t-read msg))))))
                           (notify-clients msg)
                           (db/create-message ((t-read msg) :message))))))
                           ;(swap! chat-history conj (t-read msg))))))
 
 (defroutes websocket-routes
- (GET "/ws" request (ws-handler request)))
+  ;(GET "/ws" (restrict ws-handler {:handler clotalk.routes.home/is-logged-in})))
+  (GET "/ws" request (ws-handler request)))
