@@ -17,23 +17,41 @@
 ;; Cookies
 ;response (assoc-in [:cookies "username" :value] "Alice"))
 
-
 ;; -------------------------
 ;; Atoms
 (defonce session (r/atom {:page nil
-                          :user-name ""
+                          :auth {}
                           :message-input ""
                           :local-chat-history []}))
+
+(defonce message-input-state (r/atom (str " ")))
+
 
 (defn reset-key! [key val]
   (swap! session assoc key val))
 
+(defn get-username! []
+  (get-in @session [:auth :identity :username] ""))
+
 (defn update-messages! [{:keys [message]}]
   (swap! session update-in [:local-chat-history] conj message))
 
-(defn send-message! [user-name message-text]
-  (def message {:user-name user-name :message message-text :ts (.getTime (js/Date.))})
-  (ws/send-transit-msg! {:message message}))
+(defn send-message! [username message-text]
+  (let [message {:username username :message message-text :ts (.getTime (js/Date.))}]
+    (ws/send-transit-msg! message (:auth @session))))
+
+
+(defn set-message-input-enabled! [b]
+  (if b
+    (reset! message-input-state "")
+    (reset! message-input-state " ")))
+
+(defn set-auth! [identity token]
+  (reset-key! :auth {:identity identity :token token})
+  (if (or (empty? identity) (nil? token))
+    (set-message-input-enabled! false)
+    (set-message-input-enabled! true)))
+  ;(println "after set-auth!" (:auth @session)))
 
 (defn redirect! [url]
   (set! (.-location js/document) url))
@@ -42,6 +60,16 @@
 ;; Requests
 (defn error-handler [{:keys [status status-text]}]
  (.log js/console (str "something bad happened: " status " " status-text)))
+
+(defn login-error-handler [{:keys [status status-text message]}]
+  (if (= status 403)
+    (println "message: " message) ;; TODO create some type of user feedback
+    (error-handler {:status status :status-text status-text})))
+
+(defn signup-error-handler [{:keys [status status-text message]}]
+  (if (= status 403)
+    (println "message: " message) ;; TODO create some type of user feedback
+    (error-handler {:status status :status-text status-text})))
 
 (defn fetch-chat-history! [skip limit]
   (GET "/api/messages"
@@ -53,20 +81,26 @@
   (GET "/docs"
        {:handler #(reset-key! :docs %)}))
 
-(defn do-login! [user-name password]
+(defn do-login! [username password]
   (POST "/login"
-    {:params {:user-name user-name :password password}
+    {:params {:username username :password password}
      :handler (fn [resp]
-                (println resp))
-                ;(redirect! "#/chat"))
-     :error-handler error-handler}))
+                (println resp)
+                (set-auth! (:identity resp) (:token resp))
+                (secretary/dispatch! "/chat"))
+     :error-handler login-error-handler}))
 
-(defn do-signup! [user-name password]
-  (println user-name password)
+(defn do-signup! [username password]
   (POST "/signup"
-    {:params {:user-name user-name :password password}
-     :handler #(println %)
-     :error-handler error-handler}))
+    {:params {:username username :password password}
+     :handler (fn [resp]
+                (println resp)
+                (set-auth! (:identity resp) (:token resp))
+                (secretary/dispatch! "/chat"))
+     :error-handler signup-error-handler}))
+
+(defn do-logout! []
+  (reset-key! :identity {}))
 
 ;; -------------------------
 ;; UI Helpers
@@ -81,18 +115,6 @@
 
 ;; -------------------------
 ;; UI Components
-
-#_(defn login-page [])
-  [:div
-    [:h3 "Login"]
-    [:form {:method "POST" :action "login"}
-     [:div "Username:"
-      [:input {:type "text" :name "username" :required "required"}]]]
-    [:div "Password:"
-     [:input {:type "password" :name "password" :required "required"}]]
-    [:div
-     [:input {:type "submit" :value "Log In"}]]]
-
 
 (defn nav-link [uri title page]
   [:li.nav-item
@@ -110,14 +132,11 @@
    [:a.navbar-brand {:href "#/"} "clotalk"]
    [:div#collapsing-navbar.collapse.navbar-collapse
     [:ul.nav.navbar-nav.mr-auto
-     [nav-link "#/" "Home" :home]
      [nav-link "#/chat" "Chat" :chat]
      [nav-link "#/login" "Login" :login]]]])
 
 ;; -------------------------
 ;; chat-page
-
-;(let [her-number 234] (println her-number))
 
 (defn focus-next [element-id]
   (.focus (.getElementById js/document element-id)))
@@ -192,7 +211,6 @@
                                       :on-click #(do-login! @username @password)}
              "Login"]])})))
 
-
 (defn login-wrapper []
   (let [toggle-focus (r/atom true)]
      (r/create-class
@@ -223,46 +241,50 @@
                [signup-component])]])})))
 
 
-(defn user-name-input [in-focus]
-  [:div.input-group
-   [:div.input-group-prepend
-    [:span.input-group-text "Username @"]]
-   [initial-focus-wrapper
-    [:input.form-control
-     {:type "text"
-      :value (:user-name @session)
-      :placeholder "What's your name?"
-      :aria-label "user-name"
-      :aria-describedby "basic-addon1"
-      :on-change #(swap! session assoc :user-name (-> % .-target .-value))
-      :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:user-name @session))))
-                         (do
-                           (swap! in-focus not)))}]]])
+#_(defn username-input [in-focus]
+    [:div.input-group
+     [:div.input-group-prepend
+      [:span.input-group-text "Username @"]]
+     [initial-focus-wrapper
+      [:input.form-control
+       {:type "text"
+        :value (:username @session)
+        :placeholder "What's your name?"
+        :aria-label "username"
+        :aria-describedby "basic-addon1"
+        :on-change #(swap! session assoc :username (-> % .-target .-value))
+        :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:username @session))))
+                           (do
+                             (swap! in-focus not)))}]]])
 
 (defn message-input []
-  [:div.input-group
-   [initial-focus-wrapper
-    [:input.form-control
-     {:id "message-input"
-      :type "text"
-      :value (:message-input @session)
-      :placeholder "Message"
-      :aria-label "Message"
-      :aria-describedby "basic-addon2"
-      :on-change #(swap! session assoc :message-input (-> % .-target .-value))
-      :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:message-input @session))))
-                         (do
-                           (send-message! (:user-name @session) (:message-input @session))
-                           (reset-key! :message-input "")))}]]
-   [:div.input-group-append
-    [:button.btn.btn-outline-secondary
-     {:id "send-message-button"
-      :type "button"
-      :on-click #(if (not (s/blank? (:message-input @session)))
-                     (do
-                       (send-message! (:user-name @session) (:message-input @session))
-                       (reset-key! :message-input "")))}
-     [:i.fas.fa-paper-plane]]]])
+    [:div.input-group
+     [initial-focus-wrapper
+      [:input.form-control
+       {:id "message-input"
+        :disabled @message-input-state
+        :type "text"
+        :value (:message-input @session)
+        :placeholder "Message"
+        :aria-label "Message"
+        :aria-describedby "basic-addon2"
+        :on-change #(swap! session assoc :message-input (-> % .-target .-value))
+        :on-key-press #(if (and (= 13 (.-charCode %)) (not (s/blank? (:message-input @session))))
+                           (do
+                             (println (get-username!))
+                             (send-message! (get-username!) (:message-input @session))
+                             (reset-key! :message-input "")))}]]
+     [:div.input-group-append
+      [:button.btn.btn-outline-secondary
+       {:id "send-message-button"
+        :disabled  @message-input-state
+        :type "button"
+        :on-click #(if (not (s/blank? (:message-input @session)))
+                       (do
+                         (println (get-username!))
+                         (send-message! (get-username!) (:message-input @session))
+                         (reset-key! :message-input "")))}
+       [:i.fas.fa-paper-plane]]]])
 
 (defn fetch-chat-history-button []
   [:div.container.sticky-top
@@ -275,20 +297,20 @@
    [:div.row
     [:div.col.px-0
       [:div.card.message-entry
-       {:class (if (= (:user-name @session) (get message :user-name))
+       {:class (if (= (get-username!) (:username message))
                 "float-left"
                 "float-right")}
        [:div.card-body.d-inline.p-2.bg-primary.text-white.rounded
-        {:class (if (= (:user-name @session) (get message :user-name))
+        {:class (if (= (get-username!) (:username message))
                  "bg-primary"
                  "bg-secondary")}
         [:div.card-text
-         (get message :message)]
+         (:message message)]
         [:div.card-subtitle
          [:div.container
           [:div.row
            [:div.col.pl-0 {:id "subline"}
-            [:small "@" (:user-name message)]]
+            [:small "@" (:username message)]]
            [:div.col.pr-0.float-right.text-right {:id "subline"}
             [:small " " (f/date-format (js/Date. (:ts message)) "hh:mm")]]]]]]]]])
 
@@ -299,7 +321,6 @@
 
 ;; -------------------------
 ;; pages
-
 (defn home-page []
   [:div.container
    (when-let [docs (:docs @session)]
@@ -312,32 +333,21 @@
    [:div.row
     [:div.col-md-12
      [login-wrapper]]]])
-     ;[:img {:src (str js/context "/img/warning_clojure.png")}]]]])
 
 (defn chat-page []
-  ((let [signin-focus? (r/atom true)]
-    (fn []
-      [:div.container
-       [:div.row
-        [:div.col-sm-12>div.card.px-0
-         [:div.card-body
-          [:div.scroll-box.mb-3
-           (fetch-chat-history-button)
-           (chat-history (sort-by :ts (:local-chat-history @session)))]
-          (if @signin-focus?
-            (r/as-element (user-name-input signin-focus?))
-            (do
-              (r/as-element [message-input])))]]]]))))
-              ;(.focus (.getElementById js/document "message-input"))))]]]])
-
-
+  [:div.container
+   [:div.row
+    [:div.col-sm-12>div.card.px-0
+     [:div.card-body
+      [:div.scroll-box.mb-3
+       (fetch-chat-history-button)
+       (chat-history (sort-by :ts (:local-chat-history @session)))]
+      [message-input]]]]])
 
 ;; -------------------------
 ;; page switching
-
 (def pages
-  {:home #'home-page
-   :chat #'chat-page
+  {:chat #'chat-page
    :login #'login-page})
 
 (defn page []
@@ -349,7 +359,7 @@
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-                    (swap! session assoc :page :home))
+                    (secretary/dispatch! "/chat"))
 
 (secretary/defroute "/chat" []
                     (swap! session assoc :page :chat))
@@ -390,6 +400,6 @@
   (start-websocket)
   (load-interceptors!)
   (fetch-chat-history! 0 5)
-  (fetch-docs!)
+  ;(fetch-docs!)
   (hook-browser-navigation!)
   (mount-components))

@@ -5,7 +5,7 @@
            [clojure.tools.logging :as log]
            [clojure.java.io :as io]
            [clotalk.db.core :as db]
-           ;[clotalk.routes.home :refer [is-logged-in]]
+           [clotalk.routes.home :as home]
            [buddy.auth.accessrules :refer [restrict]]))
 
 (defonce channels (atom #{}))
@@ -50,6 +50,8 @@
     (connect! channel)
     (on-close channel (partial disconnect! channel))
     (on-receive channel (fn [msg]
+                          (println (t-read msg))
+                          ;(println (home/valid-token? (:identity (:auth (t-read msg)) (:token (:auth (t-read msg))))))
                           (notify-clients msg)
                           (db/create-message ((t-read msg) :message))))))
                           ;(swap! chat-history conj (t-read msg))))))

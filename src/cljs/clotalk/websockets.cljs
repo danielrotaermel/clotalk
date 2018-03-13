@@ -10,9 +10,14 @@
    (update-fn
      (->> msg .-data (t/read json-reader)))))
 
-(defn send-transit-msg! [msg]
+(defn wrap-auth [msg auth]
+  {:message msg
+   :auth auth})
+
+
+(defn send-transit-msg! [msg auth]
  (if @ws-chan
-   (.send @ws-chan (t/write json-writer msg))
+   (.send @ws-chan (t/write json-writer (wrap-auth msg auth)))
    (throw (js/Error. "Websocket is not available!"))))
 
 (defn make-websocket! [url receive-handler]

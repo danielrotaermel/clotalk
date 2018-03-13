@@ -32,22 +32,22 @@
                          (q/skip skip))
       (objectIds->str)))
 
-(defn create-user [user-name hashed-password]
+(defn create-user [username hashed-password]
   (-> (mc/insert-and-return db "users"
-                 {:user-name user-name
+                 {:username username
                   :hashed-password hashed-password
                   :roles #{:user}})
       (objectId->str)))
 
-(defn update-user [id user-name hashed-password roles]
+(defn update-user [id username hashed-password roles]
   (-> (mc/insert-and-return db "users" {:_id id}
-             {$set {:user-name user-name
+             {$set {:username username
                     :hashed-password hashed-password
                     :roles roles}})
       (objectIds->str)))
 
-(defn get-user [user-name]
-  (-> (mc/find-one-as-map db "users" {:user-name user-name})
+(defn get-user [username]
+  (-> (mc/find-one-as-map db "users" {:username username})
       (objectId->str)))
 
 (defn create-message [message]
@@ -60,7 +60,7 @@
 
 
 
-;(query :coll "messages" :fields [:user-name] :sort {:ts -1})
+;(query :coll "messages" :fields [:username] :sort {:ts -1})
 
 ;(create-user {:test "test"})
 ;(get-user {:test "test"})
