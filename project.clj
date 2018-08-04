@@ -1,7 +1,7 @@
 (defproject clotalk "0.1.0-SNAPSHOT"
 
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "A simple websocket chat built with clojure + clojurescript and mongodb"
+  :url "http://localhost:3000"
 
   :dependencies [[buddy/buddy-auth "2.1.0"]
                  [buddy/buddy-hashers "1.3.0"]
