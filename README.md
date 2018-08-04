@@ -1,21 +1,25 @@
 # clotalk
 
-generated using Luminus version "2.9.12.27"
+A simple websocket chat built with clojure + clojurescript and mongodb 
+~~http://clotalk.herokuapp.com~~
 
-FIXME
+![screenshot](screenshot.png)
 
 ## Prerequisites
 
 You will need [Leiningen][1] 2.0 or above installed.
 
-[1]: https://github.com/technomancy/leiningen
+[1]: https://github.com/technomancy/leiningen	"Leiningen"
+[2]: https://www.mongodb.com	"MongoDB"
 
 ## Running
 
-To start a web server for the application, run:
+1. Start mongodb
 
-    lein run 
+2. To start a web server for the application, run:
 
-## License
+   ```
+   lein run
+   ```
 
-Copyright © 2018 FIXME
+3. open http://localhost:3000
